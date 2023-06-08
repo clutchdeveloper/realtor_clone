@@ -7,6 +7,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
 import Header from "./components/Header";
+import toast, { Toaster } from "react-hot-toast";
 
 function App() {
   return (
@@ -21,6 +22,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/offers" element={<Offers />} />
         </Routes>
+        <Toaster
+        position="right-center"
+        />
       </Router>
     </>
   );
