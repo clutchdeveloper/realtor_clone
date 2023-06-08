@@ -5,7 +5,7 @@ import OAuth from "../components/OAuth";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { db } from "../firebase";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -64,7 +64,7 @@ export default function SignUp() {
             />
 
             <input
-              className="mb-6 w-full px-4 py-2 text-xl text-gray-700 bg-white font-normal border-gray-300 rounded transition ease-in-out"
+              className="mb-6 w-full px-4 py-2 text-md text-gray-700 bg-white font-normal border-gray-300 rounded transition ease-in-out"
               type="email"
               id="email"
               value={email}
@@ -74,7 +74,7 @@ export default function SignUp() {
 
             <div className="relative mb-6">
               <input
-                className="w-full px-4 py-2 text-xl text-gray-700 bg-white font-normal border-gray-300 rounded transition ease-in-out"
+                className="w-full px-4 py-2 text-md text-gray-700 bg-white font-normal border-gray-300 rounded transition ease-in-out"
                 type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
