@@ -8,6 +8,8 @@ import SignUp from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
 import Header from "./components/Header";
 import toast, { Toaster } from "react-hot-toast";
+import PrivateRoute from "./components/PrivateRoute";
+
 
 function App() {
   return (
@@ -16,15 +18,16 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<PrivateRoute />}>
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/Sign-up" element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/offers" element={<Offers />} />
         </Routes>
-        <Toaster
-        position="right-center"
-        />
+        <Toaster position="right-center" />
       </Router>
     </>
   );
