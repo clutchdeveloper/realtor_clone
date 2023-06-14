@@ -1,21 +1,53 @@
-import { getAuth } from 'firebase/auth';
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router';
+import { getAuth, updateProfile } from "firebase/auth";
+import React, { useState } from "react";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router";
+import { updateDoc, doc } from "firebase/firestore";
+import { db } from "../firebase";
 
 export default function Profile() {
-  const auth = getAuth()
+  const auth = getAuth();
   const navigate = useNavigate();
+  const [changeDetail, setChangeDetail] = useState(false);
+
   const [formData, setFormData] = useState({
     name: auth.currentUser.displayName,
-    email:auth.currentUser.email
-  })
+    email: auth.currentUser.email,
+  });
 
   const { name, email } = formData;
 
   const onLoggedOut = () => {
     auth.signOut();
     navigate("/");
-  }
+  };
+
+  const handleChange = (e) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.id]: e.target.value,
+    }));
+  };
+
+  const onSubmit = async () => {
+    try {
+      if (auth.currentUser.displayName !== name) {
+        //update display name in firebase auth
+        await updateProfile(auth.currentUser, {
+          displayName: name,
+        });
+        //update name in firestore
+
+        const docRef = doc(db, "users", auth.currentUser.uid);
+        await updateDoc(docRef, {
+          name,
+        });
+      }
+      toast.success("Profile details updated");
+    } catch (error) {
+      toast.error("Could not update the profile details");
+    }
+  };
 
   return (
     <>
@@ -23,16 +55,39 @@ export default function Profile() {
         <h1 className="text-3xl text-center mt-6 font-bold">Profile</h1>
         <div className="w-full md:w-[50%] px-3 mt-6">
           <form>
-            <input type="text" id="name" value={name} disabled className="w-full px-4 py-2 text-lg text-gray-700 bg-white border border-gray-300 rounded transition ease-in-out mb-6" />
+            <input
+              type="text"
+              id="name"
+              value={name}
+              disabled={!changeDetail}
+              onChange={handleChange}
+              className={`w-full px-4 py-2 text-lg text-gray-700 bg-white border border-gray-300 rounded transition ease-in-out mb-6 ${changeDetail && "!bg-red-200 focus:bg-red-200"}`}
+            />
 
-            <input type="email" id="name" value={email} disabled className="w-full px-4 py-2 text-lg text-gray-700 bg-white border border-gray-300 rounded transition ease-in-out mb-6" />
+            <input
+              type="email"
+              id="email"
+              value={email}
+              disabled={!changeDetail}
+              onChange={handleChange}
+              className="w-full px-4 py-2 text-lg text-gray-700 bg-white border border-gray-300 rounded transition ease-in-out mb-6"
+            />
 
             <div className="flex justify-between whitespace-nowrap text-sm !font-bold sm:text-lg  mb-6">
               <p className="flex items-center">
                 Do you want to change your name?
-                <span className="text-red-600 ease-in-out hover:text-red-700 transition duration-200 ml-1 cursor-pointer">Edit</span>
+                <span
+                  onClick={() => {
+                    changeDetail && onSubmit();
+                    setChangeDetail((prevState) => !prevState);
+                  }}
+                  className="text-red-600 ease-in-out hover:text-red-700 transition duration-200 ml-1 cursor-pointer">
+                  {changeDetail ? "Apply change" : "Edit"}
+                </span>
               </p>
-              <p onClick={onLoggedOut} className="text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out cursor-pointer">Sign out</p>
+              <p onClick={onLoggedOut} className="text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out cursor-pointer">
+                Sign out
+              </p>
             </div>
           </form>
         </div>
