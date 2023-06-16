@@ -1,16 +1,20 @@
 import { getAuth, updateProfile } from "firebase/auth";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router";
-import { updateDoc, doc } from "firebase/firestore";
+import { updateDoc, doc, collection, query, orderBy, getDocs, where } from "firebase/firestore";
 import { db } from "../firebase";
 import { FcHome } from "react-icons/fc";
 import { Link } from "react-router-dom";
+import ListingIItem from "../components/ListingIItem";
 
 export default function Profile() {
   const auth = getAuth();
   const navigate = useNavigate();
   const [changeDetail, setChangeDetail] = useState(false);
+
+  const [listings, setListings] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     name: auth.currentUser.displayName,
@@ -51,6 +55,24 @@ export default function Profile() {
     }
   };
 
+  useEffect(() => {
+    const fetchUserListings = async () => {
+      const listingRef = collection(db, "listings");
+      const q = query(listingRef, where("userRef", "==", auth.currentUser.uid), orderBy("timestamp", "desc"));
+      const querySnap = await getDocs(q);
+      let listings = [];
+      querySnap.forEach((doc) => {
+        return listings.push({
+          id: doc.id,
+          data: doc.data(),
+        });
+      });
+      setListings(listings);
+      setLoading(false);
+    };
+    fetchUserListings();
+  }, [auth.currentUser.uid]);
+
   return (
     <>
       <section className="max-w-6xl  mx-auto flex justify-center items-center flex-col">
@@ -72,7 +94,8 @@ export default function Profile() {
               value={email}
               disabled={!changeDetail}
               onChange={handleChange}
-              className={`w-full px-4 py-2 text-lg text-gray-700 bg-white border border-gray-300 rounded transition ease-in-out mb-6 ${changeDetail && "!bg-red-200 focus:bg-red-200"}`}S
+              className={`w-full px-4 py-2 text-lg text-gray-700 bg-white border border-gray-300 rounded transition ease-in-out mb-6 ${changeDetail && "!bg-red-200 focus:bg-red-200"}`}
+              S
             />
 
             <div className="flex justify-between whitespace-nowrap text-sm !font-bold sm:text-lg  mb-6">
@@ -102,6 +125,21 @@ export default function Profile() {
           </button>
         </div>
       </section>
+      <div className="max-w-6xl mx-auto px-3 mt-6">
+        {!loading && listings.length > 0 && (
+          <>
+            <h2 className="text-2xl text-center font-semibold my-6">My Listings</h2>
+            <ul className="sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 my-6">
+              {listings.map((listing) => (
+                <ListingIItem
+                  key={listing.id}
+                  id={listing.id}
+                  listing={listing.data}
+                />))}
+            </ul>
+          </>
+        )}
+      </div>
     </>
   );
 }
